@@ -35,7 +35,6 @@ except KeyboardInterrupt:
 finally:
 	bug.stop()
 
-	GPIO.cleanup()
 
 
 
