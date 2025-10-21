@@ -10,8 +10,7 @@ try:
         time.sleep(0.2)
     sh.shiftByte(0)
 
-    for i in range: 
-
 finally:
+
 
     GPIO.cleanup()
