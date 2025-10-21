@@ -36,3 +36,4 @@ finally:
 	bug.stop()
 
 	GPIO.cleanup()
+
