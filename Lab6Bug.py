@@ -37,4 +37,3 @@ class Bug:
     def stop(self):
         self.__running = False
         self.__shifter.shiftByte(0)
-        GPIO.cleanup()
