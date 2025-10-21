@@ -16,11 +16,11 @@ try:
 			bug.start()
 		else:
 			bug.stop()
-
-        if GPIO.input(27):
-        	bug.isWrapOn = True
-        else:
-        	bug.isWrapOn = False
+			
+		if GPIO.input(27):
+			bug.isWrapOn = True
+		else:
+			bug.isWrapOn = False
 		
 		if GPIO.input(22):
 			bug.timestep = 0.03
@@ -36,4 +36,5 @@ finally:
 	bug.stop()
 
 	GPIO.cleanup()
+
 
