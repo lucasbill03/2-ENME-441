@@ -15,24 +15,19 @@ class Bug:
 
     def start(self):
         self.__running = True
-        try:
-            while self.__running:
-                pattern = 1 << self.x
-                self.__shifter.shiftByte(pattern)
+        pattern = 1 << self.x
+        self.__shifter.shiftByte(pattern)
+        self.x += random.choice([-1, 1])
 
-                self.x += random.choice([-1, 1])
+        if self.isWrapOn:
+            self.x %= 8
+        else:
+            if self.x < 0:
+                self.x = 0
+            if self.x > 7:
+                self.x = 7
 
-                if self.isWrapOn:
-                    self.x %= 8
-                else:
-                    if self.x < 0:
-                        self.x = 0
-                    if self.x > 7:
-                        self.x = 7
-
-                time.sleep(self.timestep)
-        except KeyboardInterrupt:
-            self.stop()
+        time.sleep(self.timestep)
 
     def stop(self):
         self.__running = False
