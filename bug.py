@@ -4,9 +4,9 @@ import random
 from Lab6Bug import Bug
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 bug = Bug(timestep=0.1, x=3, isWrapOn=False)
 
@@ -35,6 +35,7 @@ except KeyboardInterrupt:
 finally:
 	bug.stop()
 GPIO.cleanup()
+
 
 
 
