@@ -14,8 +14,8 @@ try:
 	while True:
 		if GPIO.input(17):
 			bug.start()
-        else:
-            bug.stop()
+		else:
+			bug.stop()
 
         if GPIO.input(27):
         	bug.isWrapOn = True
@@ -34,4 +34,5 @@ except KeyboardInterrupt:
 	
 finally:
 	bug.stop()
+
 	GPIO.cleanup()
