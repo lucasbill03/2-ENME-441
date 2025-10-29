@@ -55,28 +55,28 @@ def serve_web_page():
     while True:
         print('Waiting for connection...')
         conn, (client_ip, client_port) = s.accept()     # blocking call
-        try:
-            print(f'Connection from {client_ip} on client port {client_port}')
-            client_message = conn.recv(2048).decode('utf-8', errors='ignore')
-            print(f'Message from client:\n{client_message}')
-            data_dict = parsePOSTdata(client_message)
 
-            led = data_dict.get("led", "")
-            val = data_dict.get("value", "0")
+        print(f'Connection from {client_ip} on client port {client_port}')
+        client_message = conn.recv(2048).decode('utf-8', errors='ignore')
+        print(f'Message from client:\n{client_message}')
+        data_dict = parsePOSTdata(client_message)
 
-            if led in LED_PINS and val.isdigit():
-                duty = max(0, min(100, int(val)))
-                pwms[led].ChangeDutyCycle(duty)
+        led = data_dict.get("led", "")
+        val = data_dict.get("value", "0")
 
-            conn.send(b'HTTP/1.1 200 OK\r\n')
-            conn.send(b'Content-Type: text/html\r\n')
-            conn.send(b'Connection: close\r\n\r\n')
-            conn.sendall(web_page())
-        finally:
-            conn.close()
+        if led in LED_PINS and val.isdigit():
+            duty = max(0, min(100, int(val)))
+            pwms[led].ChangeDutyCycle(duty)
+
+        conn.send(b'HTTP/1.1 200 OK\r\n')
+        conn.send(b'Content-Type: text/html\r\n')
+        conn.send(b'Connection: close\r\n\r\n')
+        conn.sendall(web_page())
+
 
     serve_web_page()
     for x in pwms.values():
         x.ChangeDutyCycle(0)
         x.stop()
+
     GPIO.cleanup()
