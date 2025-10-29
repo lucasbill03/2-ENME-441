@@ -74,9 +74,9 @@ def serve_web_page():
         conn.sendall(web_page())
 
 
-    serve_web_page()
-    for x in pwms.values():
-        x.ChangeDutyCycle(0)
-        x.stop()
+serve_web_page()
+for x in pwms.values():
+    x.ChangeDutyCycle(0)
+    x.stop()
+GPIO.cleanup()
 
-    GPIO.cleanup()
