@@ -385,7 +385,7 @@ def serve_web_page():
                 print(f" Calibration phi set to {calib_phi_deg} deg")
 
             elif control == "launch":
-                json_url = value
+                json_url = value.strip()
                 print(f"Launch sequence requestion with JSON URL: {json_url}")
                 test_text = get_json(value)
                 print(f" Test text value for interem {test_text} ")
@@ -403,5 +403,6 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
 
