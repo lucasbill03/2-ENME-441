@@ -4,6 +4,7 @@ import socket
 import time
 import multiprocessing
 from shifter import Shifter
+from urllib.parse import unquote_plus  
 from Stepper_Lab8_3 import Stepper
 from RPi import GPIO
 
@@ -405,6 +406,7 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
 
 
