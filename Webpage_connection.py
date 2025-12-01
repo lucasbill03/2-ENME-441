@@ -48,7 +48,8 @@ def get_json(url):
   with url.request.urlopen(url) as val:
     raw_response = val.read
     text_response = raw_response.decode("utf-8")
-    return json.loads(text_response)
+    return text_response
+    ##return json.loads(text_response)
 
 
 def web_page(): # Creating the webpage with HTML code
@@ -378,18 +379,16 @@ def serve_web_page():
             elif control == "calib_theta":
                 calib_theta_deg = float(value)
                 print(f" Calibration theta set to {calib_theta_deg} deg")
-                #store as z axis roation offset
 
             elif control == "calib_phi":
                 calib_phi_deg = float(value)
                 print(f" Calibration phi set to {calib_phi_deg} deg")
-                #store as z axis roation offset
 
             elif control == "launch":
                 json_url = value
                 print(f"Launch sequence requestion with JSON URL: {json_url}")
-                #Json-reading code and targeting
-
+                test_text = get_json(value)
+                print(f" Test text value for interem {test_text} ")
 
             else:
                 print("Unknown control:", control)
@@ -404,3 +403,4 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
