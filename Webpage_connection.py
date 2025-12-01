@@ -387,7 +387,7 @@ def serve_web_page():
             elif control == "launch":
                 json_url = value.strip()
                 print(f"Launch sequence requestion with JSON URL: {json_url}")
-                test_text = get_json(value)
+                test_text = get_json(json_url)
                 print(f" Test text value for interem {test_text} ")
 
             else:
@@ -403,6 +403,7 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
 
 
