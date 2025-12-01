@@ -45,8 +45,8 @@ def parsePOSTdata(data):
     return data_dict
 
 def get_json(url):
-  with url.request.urlopen(url) as val:
-    raw_response = val.read
+  with urllib.request.urlopen(url) as val:
+    raw_response = val.read()
     text_response = raw_response.decode("utf-8")
     return text_response
     ##return json.loads(text_response)
@@ -403,4 +403,5 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
