@@ -35,16 +35,16 @@ m2.zero()
 # Parse function from class
 def parsePOSTdata(data):
      data_dict = {}
-    idx = data.find('\r\n\r\n') + 4 
-    data = data[idx:]
-    data_pairs = data.split('&')
-    for pair in data_pairs:
-        key_val = pair.split('=')
-        if len(key_val) == 2:
-            key = key_val[0]
-            value = unquote_plus(key_val[1])
-            data_dict[key] = value
-    return data_dict
+     idx = data.find('\r\n\r\n') + 4 
+     data = data[idx:]
+     data_pairs = data.split('&')
+     for pair in data_pairs:
+          key_val = pair.split('=')
+          if len(key_val) == 2:
+                 key = key_val[0]
+                 value = unquote_plus(key_val[1])
+                 data_dict[key] = value
+     return data_dict
 
 def get_json(url):
   with urllib.request.urlopen(url) as val:
@@ -405,6 +405,7 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
 
 
