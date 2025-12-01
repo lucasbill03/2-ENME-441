@@ -42,9 +42,7 @@ def parsePOSTdata(data):
         key_val = pair.split('=')
         if len(key_val) == 2:
             key = key_val[0]
-            val = unquote_plus(key_val[1])
-            data_dict[key] = val
-    return data_dict
+    return key
 
 def get_json(url):
   with urllib.request.urlopen(url) as val:
@@ -405,6 +403,7 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
 
 
