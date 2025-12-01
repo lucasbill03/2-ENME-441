@@ -41,7 +41,9 @@ def parsePOSTdata(data):
     for pair in data_pairs:
         key_val = pair.split('=')
         if len(key_val) == 2:
-            data_dict[key_val[0]] = key_val[1]
+            key = key_val[0]
+            val = unquote_plus(key_val[1])
+            data_dict[key] = val
     return data_dict
 
 def get_json(url):
@@ -403,6 +405,7 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
+
 
 
 
