@@ -3,6 +3,8 @@ import urllib.request
 import socket
 import time
 import multiprocessing
+import json
+import math
 from shifter import Shifter
 from urllib.parse import unquote_plus  
 from Stepper_Lab8_3 import Stepper
@@ -11,16 +13,20 @@ from RPi import GPIO
 #Initial variable and pin setup
 GPIO.setmode(GPIO.BCM)
 
-power_on = False
+power = False
+laser_state = False
 theta_deg = 0.0
 phi_deg = 0.0
 calib_theta_deg = 0.0
 calib_phi_deg = 0.0
 
+laser_pin = 15
+GPIO.setup(laser_pin, GPIO.OUT, initial=GPIO.LOW)
+
 # Stepper Motor Setup
 Stepper.shifter_outputs = multiprocessing.Value('i')
 
-s = Shifter(data=16,latch=20,clock=21)   # set up Shifter
+s = Shifter(data=17,latch=27,clock=22)   # set up Shifter
 
 lock1 = multiprocessing.Lock()
 lock2 = multiprocessing.Lock()
@@ -33,7 +39,6 @@ m1.zero()
 m2.zero()
 
 
-# Parse function from class
 def parsePOSTdata(data):
     data_dict = {}
     idx = data.find('\r\n\r\n') + 4
@@ -46,6 +51,7 @@ def parsePOSTdata(data):
             value = unquote_plus(key_val[1])
             data_dict[key] = value
     return data_dict
+
 
 def get_json(url):
   with urllib.request.urlopen(url) as val:
@@ -229,6 +235,18 @@ def web_page(): # Creating the webpage with HTML code
       </div>
     </div>
 
+    <!-- Laser Control Section -->
+    <div class="section">
+      <div class="section-title">Laser</div>
+      <div class="switch-wrapper">
+        <span class="slider-label">Laser Enable</span>
+        <label class="switch">
+          <input type="checkbox" id="laserSwitch" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
     <!-- Angle Control Section -->
     <div class="section">
       <div class="section-title">Turret Angles</div>
@@ -287,6 +305,11 @@ def web_page(): # Creating the webpage with HTML code
         sendControl("power", e.target.checked ? "on" : "off");
       }});
 
+      // Laser ON / OFF
+      document.getElementById("laserSwitch").addEventListener("change", (e) => {{
+        sendControl("laser", e.target.checked ? "on" : "off");
+      }});
+
       // θ angle
       const theta = document.getElementById("theta_angle");
       const thetaLabel = document.getElementById("theta_value");
@@ -340,7 +363,7 @@ def web_page(): # Creating the webpage with HTML code
 # Method for receiving a connection and parsing the data from the connection (website)
 def serve_web_page():
 
-    global power_on, theta_deg, phi_deg
+    global power, laser_state, theta_deg, phi_deg
     global calib_theta_deg, calib_phi_deg
 
     while True:
@@ -360,38 +383,111 @@ def serve_web_page():
             if control == "power":
                 if value =="on":
                     print(">>> Power On")
-                    power_on = True
+                    power = True
                 else:
                     print("Power Off")
-                    power_off = False
+                    power = False
 
             elif control == "theta":
                 theta_deg = float(value)
                 print(f" Set horizontal angle to {theta_deg} deg")
 
-          
-                m2.goAngle(theta_deg)
+                if power == True:
+                  m1.goAngle(theta_deg)
 
             elif control == "phi":
                 phi_deg = float(value)
                 print(f"Set vertical angle (phi) to {phi_deg} deg")
                 
-                
-                m1.goAngle(phi_deg)
+                if power == True:
+                  m2.goAngle(phi_deg)
 
             elif control == "calib_theta":
                 calib_theta_deg = float(value)
                 print(f" Calibration theta set to {calib_theta_deg} deg")
+                #store as z axis roation offset
 
             elif control == "calib_phi":
                 calib_phi_deg = float(value)
                 print(f" Calibration phi set to {calib_phi_deg} deg")
+                #store as z axis roation offset
 
             elif control == "launch":
                 json_url = value.strip()
-                print(f"Launch sequence requestion with JSON URL: {json_url}")
-                test_text = get_json(json_url)
-                print(f" Test text value for interem {test_text} ")
+                
+                json_text = get_json(json_url)
+
+                data = json.loads(json_text)
+
+                turret_number_list = []
+                turret_r_list = []
+                turret_theta_list = []
+                turret_dict = {}
+
+                for turret_number, turret_data in data["turrets"].items():
+                  turret_number_list.append(int(turret_number))
+                  turret_r_list.append(turret_data["r"])
+                  turret_theta_list.append(turret_data["theta"])
+                  turret_dict[int(turret_number)] = turret_data
+
+                globes_r = []
+                globes_theta = []
+                globes_z = []
+                globes_list = []
+
+                for globe in data["globes"]:
+                  globes_r.append(globe["r"])
+                  globes_theta.append(globe["theta"])
+                  globes_z.append(globe["z"])
+                  globes_list.append(globe)
+
+                print("\n==== PARSED JSON DATA ====")
+
+                print("\n--- TURRETS ---")
+                print("IDs:", turret_number_list)
+                print("r values:", turret_r_list)
+                print("theta values:", turret_theta_list)
+
+                print("\n--- GLOBES ---")
+                print("r values:", globes_r)
+                print("theta values:", globes_theta)
+                print("z values:", globes_z)
+                
+                if power == False:
+                  print("Power is OFF")
+                else:
+                  while power == True:
+                    for tid, theta_rad in zip(turret_number_list, turret_theta_list):
+                      theta_deg_target = math.degrees(theta_rad)
+
+                      m1.goAngle(theta_deg_target)
+
+                      GPIO.output(laser_pin, GPIO.HIGH)
+                      time.sleep(3.0)
+                      GPIO.output(laser_pin, GPIO.LOW)
+                      time.sleep(0.5)
+
+                    for i, (r, theta_rad, z) in enumerate(zip(globes_r, globes_theta, globes_z)):
+                      theta_deg_target = math.degrees(theta_rad)
+                      phi_deg_target = math.degrees(math.atan2(z,r))
+
+                      m1.goAngle(theta_deg_target)
+                      m2.goAngle(phi_deg_target)
+
+                      GPIO.output(laser_pin, GPIO.HIGH)
+                      time.sleep(3)
+                      GPIO.output(laser_pin, GPIO.LOW)
+                      time.sleep(0.5)
+
+
+
+
+            elif control == "laser":
+              laser_state = (value == "on")
+              if laser_state == True:
+                GPIO.output(laser_pin, GPIO.HIGH)
+              else:
+                GPIO.output(laser_pin, GPIO.LOW)
 
             else:
                 print("Unknown control:", control)
@@ -406,9 +502,6 @@ s.bind(('', 80))
 s.listen(1)
 
 serve_web_page()
-
-
-
 
 
 
